@@ -37,24 +37,76 @@
 
 **具体步骤**：
 
-1. **安装Python 3.11+**
-   - 访问 https://www.python.org/downloads/ 下载最新稳定版
-   - Windows安装时勾选 "Add Python to PATH"
-   - 验证安装：打开终端执行 `python --version` 和 `pip --version`
-   - 配置pip镜像源（加速下载）：
+1. **安装 Miniconda（推荐）**
+   - Miniconda 是 Anaconda 的精简版，自带 conda 包管理器和 Python，是 AI/数据科学领域的主流环境管理工具
+   - 相比直接安装 Python 的优势：多版本 Python 共存、一键创建隔离环境、预装科学计算库、依赖冲突更少
+   - 下载地址：https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/ （清华镜像，国内速度快）
+   - Windows 选择 `Miniconda3-latest-Windows-x86_64.exe`
+   - 安装时勾选 "Add Miniconda to my PATH environment variable"
+   - **如果安装时没有勾选 PATH，手动配置方法**：
+     - 找到 Miniconda 安装路径，默认为：
+       - 当前用户安装：`C:\Users\你的用户名\miniconda3`
+       - 所有用户安装：`C:\ProgramData\miniconda3`
+     - 将以下路径添加到系统环境变量 PATH（按顺序）：
+       ```
+       C:\Users\你的用户名\miniconda3
+       C:\Users\你的用户名\miniconda3\Scripts
+       C:\Users\你的用户名\miniconda3\Library\bin
+       ```
+     - 添加方法：右键"此电脑" → 属性 → 高级系统设置 → 环境变量 → 系统变量 → Path → 编辑 → 新建 → 依次添加上面三个路径 → 确定保存
+     - 如果安装时勾选了 "Register Miniconda as my default Python"，还需要将以下路径也加入 PATH：
+       ```
+       C:\Users\你的用户名\miniconda3\Library\mingw-w64\bin
+       ```
+     - **验证配置**：关闭所有终端窗口，重新打开一个新的终端，执行：
+       ```bash
+       conda --version      # 应输出 conda 版本号
+       python --version     # 应输出 Python 版本号
+       where conda          # 应输出 conda 所在路径
+       ```
+     - 如果提示 "conda 不是内部或外部命令"，说明 PATH 没配置对，检查路径是否正确
+   - 验证安装：
+     ```bash
+     conda --version      # conda 25.x.x
+     python --version     # Python 3.12.x
+     ```
+   - 配置 conda 镜像源（加速下载）：
+     ```bash
+     conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+     conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/r
+     conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/msys2
+     conda config --set show_channel_urls yes
+     ```
+   - 配置 pip 镜像源：
      ```bash
      pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+     ```
+   - 创建学习用的虚拟环境：
+     ```bash
+     conda create -n ai-learn python=3.12 -y
+     conda activate ai-learn          # 激活环境
+     conda install numpy pandas matplotlib jupyter -y   # 安装常用库
+     ```
+   - 常用 conda 命令：
+     ```bash
+     conda env list                   # 查看所有环境
+     conda activate ai-learn          # 激活环境
+     conda deactivate                 # 退出环境
+     conda install package_name       # 安装包
+     conda list                       # 查看已安装包
+     conda env export > env.yml       # 导出环境配置
+     conda env create -f env.yml      # 从配置文件创建环境
      ```
 
 2. **配置VS Code**
    - 安装扩展：Python（Microsoft官方）、Pylance（类型检查）、Jupyter（notebook支持）、GitLens
-   - 配置Python解释器：Ctrl+Shift+P → "Python: Select Interpreter"
-   - 配置终端默认使用PowerShell或Git Bash
+   - 配置 Python 解释器：Ctrl+Shift+P → "Python: Select Interpreter" → 选择 `ai-learn` 环境的 Python
+   - 配置终端默认使用 PowerShell 或 Git Bash
    - 推荐设置（settings.json）：
      ```json
      {
-       "python.defaultInterpreterPath": "python",
-       "python.linting.enabled": true,
+       "python.defaultInterpreterPath": "~/miniconda3/envs/ai-learn/python.exe",
+       "python.terminal.activateEnvironment": true,
        "editor.formatOnSave": true,
        "editor.tabSize": 4
      }
@@ -787,24 +839,33 @@ class ModelError(Exception):
 
 **目标**：掌握Python包管理工具，能创建标准项目结构。
 
-**1. 虚拟环境**
+**1. 虚拟环境（conda）**
 
 ```bash
-# venv（Python自带，推荐）
-python -m venv myenv          # 创建虚拟环境
-# Windows激活：
-myenv\Scripts\activate
-# Linux/Mac激活：
-source myenv/bin/activate
-
-# 验证
-which python    # 应该指向myenv内的python
-pip list        # 只显示虚拟环境中的包
-
-# conda（适合数据科学）
-conda create -n ai-learn python=3.11
+# conda 是 AI/数据科学的标准环境管理工具
+# 创建新环境（每个项目一个独立环境，避免依赖冲突）
+conda create -n ai-learn python=3.12 -y
 conda activate ai-learn
-conda install numpy pandas matplotlib
+conda install numpy pandas matplotlib -y
+
+# 管理环境
+conda env list                          # 查看所有环境
+conda deactivate                        # 退出当前环境
+conda env remove -n ai-learn            # 删除环境
+conda env export > environment.yml      # 导出环境配置（可复现）
+conda env create -f environment.yml     # 从配置文件创建环境
+
+# environment.yml 格式（替代 requirements.txt，conda 生态的标准格式）
+# name: ai-learn
+# channels:
+#   - defaults
+# dependencies:
+#   - python=3.12
+#   - numpy>=1.24
+#   - pandas>=2.0
+#   - pip:
+#     - scikit-learn>=1.3
+#     - torch>=2.0
 ```
 
 **2. 包管理**
@@ -1118,7 +1179,7 @@ if __name__ == '__main__':
 4. requirements.txt
 5. pyproject.toml
 6. 基本测试文件
-7. 用 `pip install -e .` 安装并验证能正常导入
+7. 用 `pip install -e .`（开发模式安装）或 `conda develop .` 安装并验证能正常导入
 
 ---
 
