@@ -1,0 +1,24 @@
+# pyproject.toml
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-learn-tools"
+version = "0.1.0"
+description = "AI学习工具包"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.24.0",
+    "pandas>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "black>=23.0",
+    "ruff>=0.1.0",
+]
+
+# 开发模式安装（修改代码立即生效，不用重新安装）
+# pip install -e .
